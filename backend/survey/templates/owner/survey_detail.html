@@ -1,0 +1,53 @@
+{% extends "owner/base.html" %}
+{% block content %}
+
+<h2 style="margin-bottom:30px;">Опрос №{{ survey.order_number }}</h2>
+
+<div class="card">
+    <p><b>ПВЗ:</b> {{ survey.point.city }} — {{ survey.point.name }}</p>
+    <p><b>Дата:</b> {{ survey.created_at|date:"d.m.Y H:i" }}</p>
+    <p><b>Статус:</b>
+        {% if survey.completed %}
+            Завершён
+        {% else %}
+            Не завершён
+        {% endif %}
+    </p>
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom:20px;">Ответы</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Вопрос</th>
+                <th>Оценка</th>
+                <th>Да/Нет</th>
+                <th>Текст</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for answer in survey.answers.all %}
+                <tr>
+                    <td>{{ answer.question.text }}</td>
+                    <td>
+                        {% if answer.answer_rating %}
+                            ★ {{ answer.answer_rating }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td>{{ answer.answer_yes_no|default:"—" }}</td>
+                    <td>{{ answer.answer_text|default:"—" }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4">Нет ответов</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

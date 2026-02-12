@@ -1,0 +1,128 @@
+{% extends "owner/base.html" %}
+{% block content %}
+
+<h2 style="margin-bottom:30px;">Дашборд</h2>
+
+<div class="card">
+    <form method="get" style="display:flex; gap:20px; align-items:end;">
+        <div>
+            <label>С даты</label><br>
+            <input type="date" name="date_from" value="{{ date_from }}">
+        </div>
+
+        <div>
+            <label>По дату</label><br>
+            <input type="date" name="date_to" value="{{ date_to }}">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Применить</button>
+
+        {% if date_from or date_to %}
+            <a href="{% url 'owner-dashboard' %}" class="btn btn-light">Сбросить</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-title">Всего заказов</div>
+        <div class="stat-value">{{ total_orders }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-title">С обратной связью</div>
+        <div class="stat-value">{{ total_feedback_orders }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-title">Всего оценок</div>
+        <div class="stat-value">{{ total_reviews }}</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-title">Средний рейтинг</div>
+        <div class="stat-value rating">
+            {% if average_rating %}
+                <span>★</span> {{ average_rating|floatformat:2 }}
+            {% else %}
+                —
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom:20px;">Рейтинг по ПВЗ</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Город</th>
+                <th>ПВЗ</th>
+                <th>Средний рейтинг</th>
+                <th>Кол-во заказов с оценкой</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in point_stats %}
+            <tr>
+                <td>{{ row.survey__point__city }}</td>
+                <td>{{ row.survey__point__name }}</td>
+                <td class="rating">
+                    ★ {{ row.avg_rating|floatformat:2 }}
+                </td>
+                <td>{{ row.total_orders_with_rating }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4">Нет данных</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom:20px;">Заказы</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>№ заказа</th>
+                <th>ПВЗ</th>
+                <th>Рейтинг</th>
+                <th>Дата</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+
+        {% for survey in surveys %}
+            <tr>
+                <td>{{ survey.order_number }}</td>
+                <td>{{ survey.point.city }} — {{ survey.point.name }}</td>
+                <td class="rating">
+                    {% if survey.average_rating %}
+                        <span>★</span> {{ survey.average_rating|floatformat:2 }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td>{{ survey.created_at|date:"d.m.Y H:i" }}</td>
+                <td>
+                    <a href="{% url 'owner-survey-detail' survey.pk %}" class="btn btn-light">
+                        Подробнее
+                    </a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5">Нет заказов</td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

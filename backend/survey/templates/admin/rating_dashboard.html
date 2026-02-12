@@ -1,0 +1,137 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+
+<div class="p-8 max-w-6xl">
+
+    <h1 class="text-3xl font-bold mb-8">
+        Дашборд ПВЗ
+    </h1>
+
+    <!-- ФИЛЬТР -->
+    <div class="bg-white shadow rounded-2xl p-6 mb-8">
+
+        <form method="get" class="flex flex-wrap items-end gap-6">
+
+            <div>
+                <label class="block text-sm font-medium mb-2 text-gray-600">
+                    С даты
+                </label>
+                <input type="date"
+                       name="date_from"
+                       value="{{ date_from }}"
+                       class="border border-gray-300 rounded-xl px-4 py-2 w-48 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2 text-gray-600">
+                    По дату
+                </label>
+                <input type="date"
+                       name="date_to"
+                       value="{{ date_to }}"
+                       class="border border-gray-300 rounded-xl px-4 py-2 w-48 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+
+            <!-- КНОПКИ -->
+            <div class="flex gap-3">
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-medium transition">
+                    Применить
+                </button>
+
+                {% if date_from or date_to %}
+                    <a href="?"
+                       class="px-6 py-2 rounded-xl border border-gray-300 hover:bg-gray-100 transition">
+                        Сбросить
+                    </a>
+                {% endif %}
+            </div>
+
+        </form>
+
+        <div class="mt-4 text-sm text-gray-500">
+            {% if date_from or date_to %}
+                Период:
+                <strong>
+                    {{ date_from|default:"..." }}
+                    —
+                    {{ date_to|default:"..." }}
+                </strong>
+            {% else %}
+                Период: <strong>За всё время</strong>
+            {% endif %}
+        </div>
+
+    </div>
+
+
+    <!-- ТАБЛИЦА -->
+    <div class="bg-white shadow rounded-2xl overflow-hidden mb-8">
+
+        <table class="min-w-full text-sm">
+            <thead class="bg-gray-100 text-left text-gray-600 uppercase text-xs tracking-wider">
+                <tr>
+                    <th class="px-6 py-4">Город</th>
+                    <th class="px-6 py-4">ПВЗ</th>
+                    <th class="px-6 py-4">Средний рейтинг</th>
+                    <th class="px-6 py-4">Кол-во оценок</th>
+                </tr>
+            </thead>
+
+            <tbody class="divide-y divide-gray-200">
+
+                {% for row in stats %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            {{ row.survey__point__city }}
+                        </td>
+                        <td class="px-6 py-4 font-medium">
+                            {{ row.survey__point__name }}
+                        </td>
+                        <td class="px-6 py-4">
+                            ⭐ {{ row.avg_rating|floatformat:2 }}
+                        </td>
+                        <td class="px-6 py-4 font-semibold">
+                            {{ row.total_reviews }}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4"
+                            class="px-6 py-8 text-center text-gray-400">
+                            Нет данных за выбранный период
+                        </td>
+                    </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+
+    </div>
+
+
+    <!-- СТАТИСТИКА -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="bg-white shadow rounded-2xl p-6">
+            <div class="text-sm text-gray-500 mb-2">Всего заказов</div>
+            <div class="text-3xl font-bold">{{ total_orders }}</div>
+        </div>
+
+        <div class="bg-white shadow rounded-2xl p-6">
+            <div class="text-sm text-gray-500 mb-2">С обратной связью</div>
+            <div class="text-3xl font-bold">{{ total_feedback_orders }}</div>
+        </div>
+
+        <div class="bg-white shadow rounded-2xl p-6">
+            <div class="text-sm text-gray-500 mb-2">Всего оценок</div>
+            <div class="text-3xl font-bold">{{ total_reviews }}</div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+

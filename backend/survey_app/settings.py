@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 
+from django.urls import reverse
 import dj_database_url
 from dotenv import load_dotenv
 
@@ -9,19 +10,26 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-secret-key')
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+DEBUG = True
 ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'corsheaders',
-    'rest_framework',
-    'survey',
+    "unfold",
+    "unfold.contrib.filters",
+    "unfold.contrib.forms",
+    "unfold.contrib.inlines",
+    "unfold.contrib.import_export",
+
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+
+    "corsheaders",
+    "rest_framework",
+    "survey",
 ]
 
 MIDDLEWARE = [
@@ -33,6 +41,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'survey.middleware.BlockOwnerAdminMiddleware',
 ]
 
 ROOT_URLCONF = 'survey_app.urls'
@@ -74,8 +83,10 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = []
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -93,3 +104,82 @@ REST_FRAMEWORK = {
         'survey_submit': '10/min',
     },
 }
+
+def sidebar_callback(request):
+
+    if request.user.is_superuser:
+        return {
+            "navigation": [
+                {
+                    "title": "Администрирование",
+                    "items": [
+                        {
+                            "title": "ПВЗ",
+                            "icon": "location_on",
+                            "link": "/admin/survey/point/",
+                        },
+                        {
+                            "title": "Вопросы",
+                            "icon": "help",
+                            "link": "/admin/survey/question/",
+                        },
+                        {
+                            "title": "Пользователи",
+                            "icon": "group",
+                            "link": "/admin/auth/user/",
+                        },
+                    ],
+                },
+                {
+                    "title": "Survey",
+                    "items": [
+                        {
+                            "title": "Опросы",
+                            "icon": "description",
+                            "link": "/admin/survey/survey/",
+                        },
+                        {
+                            "title": "Рейтинги",
+                            "icon": "bar_chart",
+                            "link": "/admin/survey/survey/rating-dashboard/",
+                        },
+                    ],
+                },
+            ]
+        }
+
+    # 👇 Владелец ПВЗ
+    return {
+        "navigation": [
+            {
+                "title": "Опросники",
+                "items": [
+                    {
+                        "title": "Опросы",
+                        "icon": "description",
+                        "link": "/admin/survey/survey/",
+                    },
+                    {
+                        "title": "Рейтинги",
+                        "icon": "bar_chart",
+                        "link": "/admin/survey/survey/rating-dashboard/",
+                    },
+                ],
+            }
+        ]
+    }
+
+
+UNFOLD = {
+    "SITE_TITLE": "Survey Admin",
+    "SITE_HEADER": "Survey Platform",
+    "SITE_SYMBOL": "dashboard",
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": False,
+    "SIDEBAR": sidebar_callback,
+}
+
+
+import mimetypes
+mimetypes.add_type("text/css", ".css", True)
+mimetypes.add_type("application/javascript", ".js", True)
